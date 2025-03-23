@@ -28,7 +28,7 @@ public_users.post("/register", (req, res) => {
 });
 
 
-// Get book details based on ISBN
+// Get book details based on ISBN (synchronous route)
 public_users.get('/isbn/:isbn', function (req, res) {
   // ✅ Step 1: Retrieve ISBN from URL
   const isbn = req.params.isbn;
@@ -44,8 +44,24 @@ public_users.get('/isbn/:isbn', function (req, res) {
   }
 });
 
+// -------------------------------------------------
+// Task 11: Get book details based on ISBN using async/await + Axios
+// -------------------------------------------------
+public_users.get('/isbn-async/:isbn', async function (req, res) {
+  // Retrieve ISBN from URL
+  const isbn = req.params.isbn;
+  try {
+    // Call the existing /isbn/:isbn route using Axios
+    const response = await axios.get(`http://localhost:3000/isbn/${isbn}`);
+    return res.status(200).json(response.data);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch book details", error: error.message });
+  }
+});
+
+
   
-// Get book details based on author
+// Get book details based on author (original route)
 public_users.get('/author/:author', function (req, res) {
   const author = req.params.author;
 
@@ -60,7 +76,21 @@ public_users.get('/author/:author', function (req, res) {
   }
 });
 
-// Get all books based on title
+// -------------------------------------------------
+// Task 12: Get book details based on Author using async/await + Axios
+// -------------------------------------------------
+public_users.get('/author-async/:author', async function (req, res) {
+  const author = req.params.author;
+  try {
+    // Call the existing '/author/:author' route using Axios
+    const response = await axios.get(`http://localhost:3000/author/${author}`);
+    return res.status(200).json(response.data);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch books by author", error: error.message });
+  }
+});
+
+// Get all books based on title (original synchronous route)
 public_users.get('/title/:title', function (req, res) {
   const title = req.params.title;
 
@@ -75,19 +105,87 @@ public_users.get('/title/:title', function (req, res) {
   }
 });
 
-//  Get book review
-public_users.get('/review/:isbn', function (req, res) {
-  const isbn = req.params.isbn;
+// Route to get all books (synchronous)
+public_users.get('/books', function (req, res) {
+  res.status(200).json(books);
+});
 
-  // Step 1: Check if the book exists
-  const book = books[isbn];
-
-  if (book) {
-    // Step 2: Return only the reviews
-    return res.status(200).json({ reviews: book.reviews });
-  } else {
-    return res.status(404).json({ message: "Book not found for the given ISBN." });
+// -----------------------------
+// Task 10: Get all books using async/await + Axios
+// -----------------------------
+const axios = require('axios'); // Ensure axios is imported
+public_users.get('/books-async', async (req, res) => {
+  try {
+    // Call the /books route which returns all books
+    const response = await axios.get('http://localhost:3000/books');
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch books', error: error.message });
   }
 });
+
+// -----------------------------
+// Task 13: Get book details based on Title using async/await + Axios
+// -----------------------------
+public_users.get('/title-async/:title', async function (req, res) {
+  const title = req.params.title;
+  try {
+    // Call the existing '/title/:title' route using Axios
+    const response = await axios.get(`http://localhost:3000/title/${title}`);
+    return res.status(200).json(response.data);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch books by title", error: error.message });
+  }
+});
+
+
+public_users.get('/books-async', async (req, res) => {
+  try {
+    // Call the /books route which returns all books
+    const response = await axios.get('http://localhost:3000/books');
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch books', error: error.message });
+  }
+});
+
+//  Get book review
+public_users.put('/review/:isbn', function (req, res) {
+  const isbn = req.params.isbn;
+  const review = req.query.review;
+  const username = req.session?.authorization?.username;
+
+  // Step 1: Check if user is logged in
+  if (!username) {
+    return res.status(401).json({ message: "User not logged in. Please log in to post a review." });
+  }
+
+  // Step 2: Validate the review
+  if (!review) {
+    return res.status(400).json({ message: "Review is required as a query parameter." });
+  }
+
+  // Step 3: Check if the book exists
+  const book = books[isbn];
+  if (!book) {
+    return res.status(404).json({ message: "Book not found for the given ISBN." });
+  }
+
+  // Step 4: Initialize the reviews object if it doesn't exist
+  if (!book.reviews) {
+    book.reviews = {};
+  }
+
+  // Step 5: Add or update the user's review
+  const isUpdated = book.reviews.hasOwnProperty(username);
+  book.reviews[username] = review;
+
+  // Step 6: Return updated reviews
+  return res.status(200).json({
+    message: isUpdated ? "Review updated successfully." : "Review added successfully.",
+    reviews: book.reviews
+  });
+});
+
 
 module.exports.general = public_users;

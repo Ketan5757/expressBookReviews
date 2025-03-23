@@ -12,6 +12,7 @@ const secretKey = "your_secret_key_here"; // 🔐 Add your own secure key
 // Middleware to parse JSON request bodies
 app.use(express.json());
 
+
 // Session middleware for customer routes
 app.use("/customer", session({
   secret: "fingerprint_customer",
