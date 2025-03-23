@@ -1,42 +1,49 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const session = require('express-session')
+const session = require('express-session');
 const customer_routes = require('./router/auth_users.js').authenticated;
 const genl_routes = require('./router/general.js').general;
 
 const app = express();
 
+// Secret key for JWT verification
+const secretKey = "your_secret_key_here"; // 🔐 Add your own secure key
+
+// Middleware to parse JSON request bodies
 app.use(express.json());
 
-app.use("/customer",session({secret:"fingerprint_customer",resave: true, saveUninitialized: true}))
+// Session middleware for customer routes
+app.use("/customer", session({
+  secret: "fingerprint_customer",
+  resave: true,
+  saveUninitialized: true
+}));
 
-app.use("/customer/auth/*", function auth(req,res,next){
-    const token = req.headers['authorization'];
+// Auth middleware for protected customer routes
+app.use("/customer/auth/*", function auth(req, res, next) {
+  const token = req.headers['authorization'];
 
-    if (!token) {
-        return res.status(401).json({ message: 'No token provided. Access denied.' });
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided. Access denied.' });
+  }
+
+  // Remove "Bearer " if present
+  const tokenWithoutBearer = token.split(' ')[1] || token;
+
+  jwt.verify(tokenWithoutBearer, secretKey, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Invalid or expired token.' });
     }
 
-    // Remove "Bearer " from the token string if present
-    const tokenWithoutBearer = token.split(' ')[1];
-
-    // Verify token using the secret key
-    jwt.verify(tokenWithoutBearer, secretKey, (err, decoded) => {
-        if (err) {
-            return res.status(403).json({ message: 'Invalid or expired token.' });
-        }
-
-        // Attach the decoded token information to the request object for later use
-        req.user = decoded;
-
-        // Proceed to the next middleware or route handler
-        next();
-    });
+    req.user = decoded; // attach user info
+    next();
+  });
 });
- 
-const PORT =3000;
 
-app.use("/customer", customer_routes);
-app.use("/", genl_routes);
+// Route definitions
+app.use("/customer", customer_routes); // Authenticated routes (e.g., login, review)
+app.use("/", genl_routes);             // Public routes (e.g., register, get books)
 
-app.listen(PORT,()=>console.log("Server is running"));
+const PORT = 3000;
+
+app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`));
