@@ -8,35 +8,25 @@ const public_users = express.Router();
 public_users.post("/register", (req, res) => {
   const { username, password } = req.body;
 
-  // Check if username and password are provided
+  // ❗ Validate presence of both username and password
   if (!username || !password) {
     return res.status(400).json({ message: "Username and password are required." });
   }
 
-  // Check if the username already exists
+  // 🔍 Check if user already exists
   const userExists = users.some((user) => user.username === username);
 
   if (userExists) {
     return res.status(409).json({ message: "Username already exists. Please choose another one." });
   }
 
-  // Add new user to the users list
+  // ✅ Add new user to the in-memory users array
   users.push({ username, password });
 
+  // 🎉 Success response
   return res.status(201).json({ message: "User registered successfully!" });
 });
 
-// Get the book list available in the shop
-public_users.get('/', function (req, res) {
-  // Use JSON.stringify to display the book list neatly
-  const bookList = JSON.stringify(books, null, 2);  // Pretty-print with 2 spaces of indentation
-  
-  // Return the book list as a JSON response
-  return res.status(200).json({
-    message: "Books available in the shop",
-    books: JSON.parse(bookList)  // Parse it back to an object if necessary
-  });
-});
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn', function (req, res) {
