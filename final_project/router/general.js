@@ -40,15 +40,33 @@ public_users.get('/isbn/:isbn', function (req, res) {
 
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+public_users.get('/author/:author', function (req, res) {
+  const author = req.params.author;
+
+  // Step 1: Get all books as an array
+  const booksByAuthor = Object.values(books).filter((book) => book.author === author);
+
+  // Step 2: Respond with matching books or 404
+  if (booksByAuthor.length > 0) {
+    return res.status(200).json({ books: booksByAuthor });
+  } else {
+    return res.status(404).json({ message: "No books found by the given author." });
+  }
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+public_users.get('/title/:title', function (req, res) {
+  const title = req.params.title;
+
+  // Step 1: Get all books as an array
+  const booksByTitle = Object.values(books).filter((book) => book.title === title);
+
+  // Step 2: Respond with matching books or 404
+  if (booksByTitle.length > 0) {
+    return res.status(200).json({ books: booksByTitle });
+  } else {
+    return res.status(404).json({ message: "No books found with the given title." });
+  }
 });
 
 //  Get book review
