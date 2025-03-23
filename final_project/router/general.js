@@ -61,7 +61,7 @@ public_users.get('/isbn-async/:isbn', async function (req, res) {
 
 
   
-// Get book details based on author (original route)
+// Get book details based on author
 public_users.get('/author/:author', function (req, res) {
   const author = req.params.author;
 
@@ -76,21 +76,7 @@ public_users.get('/author/:author', function (req, res) {
   }
 });
 
-// -------------------------------------------------
-// Task 12: Get book details based on Author using async/await + Axios
-// -------------------------------------------------
-public_users.get('/author-async/:author', async function (req, res) {
-  const author = req.params.author;
-  try {
-    // Call the existing '/author/:author' route using Axios
-    const response = await axios.get(`http://localhost:3000/author/${author}`);
-    return res.status(200).json(response.data);
-  } catch (error) {
-    return res.status(500).json({ message: "Failed to fetch books by author", error: error.message });
-  }
-});
-
-// Get all books based on title (original synchronous route)
+// Get all books based on title
 public_users.get('/title/:title', function (req, res) {
   const title = req.params.title;
 
@@ -105,7 +91,6 @@ public_users.get('/title/:title', function (req, res) {
   }
 });
 
-// Route to get all books (synchronous)
 public_users.get('/books', function (req, res) {
   res.status(200).json(books);
 });
@@ -113,31 +98,7 @@ public_users.get('/books', function (req, res) {
 // -----------------------------
 // Task 10: Get all books using async/await + Axios
 // -----------------------------
-const axios = require('axios'); // Ensure axios is imported
-public_users.get('/books-async', async (req, res) => {
-  try {
-    // Call the /books route which returns all books
-    const response = await axios.get('http://localhost:3000/books');
-    res.status(200).json(response.data);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch books', error: error.message });
-  }
-});
-
-// -----------------------------
-// Task 13: Get book details based on Title using async/await + Axios
-// -----------------------------
-public_users.get('/title-async/:title', async function (req, res) {
-  const title = req.params.title;
-  try {
-    // Call the existing '/title/:title' route using Axios
-    const response = await axios.get(`http://localhost:3000/title/${title}`);
-    return res.status(200).json(response.data);
-  } catch (error) {
-    return res.status(500).json({ message: "Failed to fetch books by title", error: error.message });
-  }
-});
-
+const axios = require('axios');
 
 public_users.get('/books-async', async (req, res) => {
   try {
